@@ -42,7 +42,14 @@
  */
 - (void)advertiseForProgrammaticDiscovery;
 
-- (void)didReceiveInvitationFromPeer:(MCPeerID *)peer context:(NSData *)context invite:(BOOL)invite;
+/**
+ * Called when you receive an invitation from a peer to connect.
+ * @param invite A block that is called whenever a peer tries to connect. Contains
+ * the peer The peer who wishes to connect and context data the peer sent along with the invitation. 
+ * Context data may be nil.
+ */
+- (void)didReceiveInvitationFromPeer:(void(^)(MCPeerID *peer, NSData *context))invite;
+
 /**
  * Sends data to all connected peers. Uses 'MCSessionSendDataReliable' mode.
  * @param data the data that you wish to send to all of the connected peers.
@@ -92,6 +99,13 @@
 
 - (void)didFindPeerWithInfo:(void(^)(MCPeerID *peer, NSDictionary *info))found;
 
+/**
+ * Call this when a peer has asked to connect. Pass YES if you want to connect,
+ * pass NO if you don't want to connect.
+ * @param connect Whether or not you want to connect to the peer asking to connect.
+ * YES will accept the connection, NO will decline.
+ */
+- (void)connectToPeer:(BOOL)connect;
 /**
  * Invites the peer to connect to your session. Calls the 'connected'
  * block when the connection is successful.

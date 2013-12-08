@@ -8,21 +8,35 @@
 
 #import "TJLViewController.h"
 #import "TJLSessionManager.h"
-@interface TJLViewController ()<UITableViewDataSource>
+@interface TJLViewController ()<UITableViewDataSource, UIAlertViewDelegate>
 @property(strong, nonatomic) TJLSessionManager *sessionManager;
 @property (weak, nonatomic) IBOutlet UITextField *textField;
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property(strong, nonatomic) NSMutableArray *datasource;
+@property(nonatomic,copy) BOOL(^invitationBlock)(MCPeerID *peer, NSData *context);
 @end
 
 @implementation TJLViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.datasource = [NSMutableArray new];
-    self.sessionManager = [[TJLSessionManager alloc]initWithDisplayName:@"Terry"];
-    
     __weak typeof (self) weakSelf = self;
+    self.datasource = [NSMutableArray new];
+    self.sessionManager = [[TJLSessionManager alloc]initWithDisplayName:[NSString stringWithFormat:@"Terry %@", @(arc4random_uniform(100))]];
+    
+    [self.sessionManager didReceiveInvitationFromPeer:^void(MCPeerID *peer, NSData *context) {
+        __strong typeof (weakSelf) strongSelf = weakSelf;
+        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"Accept Connection?" message:[NSString stringWithFormat:@"Can %@%@", peer.displayName, @" Connect?"] delegate:strongSelf cancelButtonTitle:@"Cancel" otherButtonTitles:@"OK", nil];
+        [alertView show];
+    }];
+    
+    [self.sessionManager peerConnectionStatusOnMainQueue:YES block:^(MCPeerID *peer, MCSessionState state) {
+        if(state == MCSessionStateConnected) {
+            UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"Connected!" message:[NSString stringWithFormat:@"Now connected with %@", peer.displayName] delegate:nil cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
+            [alertView show];
+        }
+    }];
+    
     [self.sessionManager receiveDataOnMainQueue:YES block:^(NSData *data, MCPeerID *peer) {
         __strong typeof (weakSelf) strongSelf = weakSelf;
         NSString *string = [NSKeyedUnarchiver unarchiveObjectWithData:data];
@@ -30,6 +44,7 @@
         
         [strongSelf.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:self.datasource.count - 1 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
     }];
+    
     self.tableView.dataSource = self;
 }
 
@@ -71,5 +86,9 @@
     cell.detailTextLabel.text = array.lastObject;
     
     return cell;
+}
+
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    [self.sessionManager connectToPeer:buttonIndex == 1];
 }
 @end

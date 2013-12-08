@@ -21,7 +21,7 @@
 @property(nonatomic, copy) void(^browserCancelled)(void);
 @property(nonatomic,copy) void(^didFindPeer)(MCPeerID *peer, NSDictionary *info);
 @property(nonatomic,copy) void(^invitationHandler)(BOOL connect, MCSession *session);
-@property(nonatomic, assign) BOOL invite;
+@property(nonatomic,copy) void(^inviteBlock)(MCPeerID *peer, NSData *context);
 @property(nonatomic, assign) BOOL receiveOnMainQueue;
 @property(nonatomic, assign) BOOL statusOnMainQueue;
 @end
@@ -56,10 +56,8 @@
 }
 
 - (void)advertiser:(MCNearbyServiceAdvertiser *)advertiser didReceiveInvitationFromPeer:(MCPeerID *)peerID withContext:(NSData *)context invitationHandler:(void (^)(BOOL, MCSession *))invitationHandler {
-    UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"Accept Connection?" message:[NSString stringWithFormat:@"Can %@%@", peerID.displayName, @" Connect?"] delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"OK", nil];
-    [alertView show];
     self.invitationHandler = [invitationHandler copy];
-    
+    if(self.inviteBlock) self.inviteBlock(peerID, context);
 }
 
 - (void)advertiserAssistantDidDismissInvitation:(MCAdvertiserAssistant *)advertiserAssistant {
@@ -71,7 +69,7 @@
 }
 
 - (void)browseForProgrammaticDiscovery {
-    self.browser = [[MCNearbyServiceBrowser alloc]initWithPeer:self.peerID serviceType:@"service"];
+    self.browser = [[MCNearbyServiceBrowser alloc]initWithPeer:self.peerID serviceType:ServiceType];
     self.browser.delegate = self;
     [self.browser startBrowsingForPeers];
 }
@@ -174,8 +172,8 @@
     return self.session.connectedPeers;
 }
 
-- (void)didReceiveInvitationFromPeer:(MCPeerID *)peer context:(NSData *)context invite:(BOOL)invite {
-    self.invite = invite;
+- (void)didReceiveInvitationFromPeer:(void(^)(MCPeerID *peer, NSData *context))invite; {
+    self.inviteBlock = [invite copy];
 }
 
 - (void)invitePeerToConnect:(MCPeerID *)peer connected:(void(^)(void))connected {
@@ -194,8 +192,8 @@
     return self.session.connectedPeers && self.session.connectedPeers.count > 0;
 }
 
--(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    self.invitationHandler(buttonIndex == 1, self.session);
+-(void)connectToPeer:(BOOL)connect {
+    self.invitationHandler(connect, self.session);
 }
 
 -(MCSession *)session {
