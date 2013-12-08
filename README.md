@@ -1,9 +1,9 @@
 <h1>TJLSessionManager</h1>
-A manager class for the new MultipeerConnectivity framework. Wraps up a bunch of delegate methods and makes it so you don't have to worry about clogging up your view controller with all ton of delegate methods, or worry about rolling your own manager class. Also provides a block based API rather than only delegate methods.
+A manager class for the new MultipeerConnectivity framework. Wraps up a bunch of delegate methods and makes it so you don't have to worry about clogging up your view controller with a ton of delegate methods, or worry about rolling your own manager class. Also provides a block based API rather than the normal delegate methods.
 
 <h2>Installation</h2>
 <hr>
-Cocoapods, www.cocoapods.org support is forthcoming, but until then just grab the files in the Source folder, drop it into your project and then `#import "TJLSessionManager.h"`. I am using the new Xcode modules, so you should not need to add anything framework to your project.
+Cocoapods, www.cocoapods.org support is forthcoming, but until then just grab the files in the Source folder, drop it into your project and then `#import "TJLSessionManager.h"`. I am using the new Xcode modules, so you should not need to add any frameworks to your project.
 <h2>Usage</h2>
 <hr>
 There are several things that you need to do to connect two or more users with the Multipeer framework, and the basic steps of using TJLSessionManager are outlined below.<br>
