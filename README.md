@@ -3,22 +3,22 @@ A manager class for the new MultipeerConnectivity framework. Wraps up a bunch of
 
 <h2>Installation</h2>
 <hr>
-Cocoapods, www.cocoapods.org support is forthcoming, but until then just grab the files in the Source folder, drop it into your project and then '#import "TJLSessionManager.h"'. I am using the new Xcode modules, so you should not need to add anything framework to your project.
+Cocoapods, www.cocoapods.org support is forthcoming, but until then just grab the files in the Source folder, drop it into your project and then `#import "TJLSessionManager.h"`. I am using the new Xcode modules, so you should not need to add anything framework to your project.
 <h2>Usage</h2>
 <hr>
-There are several things that you need to do to connect two or more users with the Multipeer framework, and the basic steps of using TJLSessionManager are outlined below.
+There are several things that you need to do to connect two or more users with the Multipeer framework, and the basic steps of using TJLSessionManager are outlined below.<br>
 `-initWithDisplayName:`<br>
-One device will advertise,
+One device will advertise,<br>
 `-advertiseForBrowserViewController`<br>
-One device will browse, this uses the Apple provided browser view controller.
+One device will browse, this uses the Apple provided browser view controller.<br>
 `-browserWithControllerInViewController:connected:canceled:`<br>
-This will be called when someone wants to connect.
+This will be called when someone wants to connect.<br>
 `-didReceiveInvitationFromPeer:`<br>
-This will give you the status of the connection.
+This will give you the status of the connection.<br>
 `-peerConnectionStatusOnMainQueue:block:`<br>
-Then you have a block where you will receive data that is sent from the connected peer.
+Then you have a block where you will receive data that is sent from the connected peer.<br>
 `-receiveDataOnMainQueue:block:`<br>
-and thats the basics of it.<br>
+and thats the basics of it. The header is well documented, so you can check there as well for any further info.<br>
 
 
 <h1>License</h1>
