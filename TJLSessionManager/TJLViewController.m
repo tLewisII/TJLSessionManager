@@ -45,6 +45,14 @@
         [strongSelf.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:self.datasource.count - 1 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
     }];
     
+    [self.sessionManager receiveFinalResourceOnMainQueue:YES complete:^(NSString *name, MCPeerID *peer, NSURL *url, NSError *error) {
+        __strong typeof (weakSelf) strongSelf = weakSelf;
+        NSData *data = [NSData dataWithContentsOfURL:url];
+        [strongSelf.datasource addObject:@[name, [UIImage imageWithData:data], peer.displayName]];
+        
+        [strongSelf.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:self.datasource.count - 1 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
+    }];
+    
     self.tableView.dataSource = self;
 }
 
@@ -71,6 +79,20 @@
     }
 }
 
+- (IBAction)sendResource:(UIButton *)sender {
+   NSString *path = [[NSBundle mainBundle]pathForResource:@"301-alien-ship@2x" ofType:@"png"];
+    NSURL *url = [NSURL fileURLWithPath:path];
+  NSProgress *progress = [self.sessionManager sendResourceWithName:@"SweetPic" atURL:url toPeer:self.sessionManager.firstPeer complete:^(NSError *error) {
+      if(!error) {
+          NSLog(@"finished sending resource");
+      }
+      else {
+          NSLog(@"%@", error);
+      }
+   }];
+    NSLog(@"%@", @(progress.fractionCompleted));
+}
+
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
@@ -84,6 +106,8 @@
     NSArray *array = self.datasource[indexPath.row];
     cell.textLabel.text = array.firstObject;
     cell.detailTextLabel.text = array.lastObject;
+    if(array.count == 3)
+        cell.imageView.image = array[1];
     
     return cell;
 }

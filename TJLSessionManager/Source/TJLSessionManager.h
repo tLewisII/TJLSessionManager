@@ -75,9 +75,37 @@
  */
 - (void)receiveDataOnMainQueue:(BOOL)mainQueue block:(void (^)(NSData *data, MCPeerID *peer))dataBlock;
 
-- (void)sendResourceWithName:(NSString *)name atURL:(NSURL *)url error:(void (^)(NSError *error))errorBlock;
+/**
+ * Sends the resource with the given name at the given URL to the peer.
+ * It is only possible to send a resource to one peer at a time.
+ * @param name The name of the resource.
+ * @param url The URL of the resource. Could be local, or could be on the web.
+ * If local, must be inside your sandbox, so you can't send ALAssests by sending
+ * their URL with this method, as they are not inside your sandbox.
+ * @param peer The peer to send the resource to. Can only send resources to
+ * one peer at a time.
+ * @param complete Called when sending is complete or an error occurs.
+ * If there was no error, then the error param is nil, otherwise it will be non-nil.
+ * @return A NSProgress object so you can observe the progress of the sending operation.
+ */
+- (NSProgress *)sendResourceWithName:(NSString *)name atURL:(NSURL *)url toPeer:(MCPeerID *)peer complete:(void (^)(NSError *error))compelete;
 
-- (void)receiveResource:(void (^)(NSString *name, NSURL *url))block;
+/**
+ * Called when the resource is done being received.
+ * @param mainQueue Whether or not `block` should be called on the main queue or not.
+ * @param block Block will be called when the resource in done being received.
+ * The resource can be loaded from the url, and the error will be nil unless there
+ * was a problem receiving the resource.
+ */
+- (void)receiveFinalResourceOnMainQueue:(BOOL)mainQueue complete:(void (^)(NSString *name, MCPeerID *peer, NSURL *url, NSError *error))block;
+
+/**
+ * Called when a resource has begun to be recieved.
+ * @param mainQueue Whether or not `block` should be called on the main queue or not.
+ * @param block Block is called once the resource has begun to be received.
+ * `progress` cna be used to observe the elapsed time if the resource transfer.
+ */
+- (void)startReceivingResourceOnMainQueue:(BOOL)mainQueue block:(void(^)(NSString *name, MCPeerID *peer, NSProgress *progress))block;
 
 /**
  * Notifies you of the connection status of the particular peer
@@ -133,4 +161,9 @@
  * A dictionary of discovery info for use with service advertisers.
  */
 @property(strong, nonatomic) NSDictionary *discoveryInfo;
+
+/**
+ * The first peer that connected to the session.
+ */
+@property(strong, nonatomic, readonly)MCPeerID *firstPeer;
 @end

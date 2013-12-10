@@ -22,6 +22,7 @@
 		DB06E36D185403F3004E5E19 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DB06E36B185403F3004E5E19 /* InfoPlist.strings */; };
 		DB06E36F185403F3004E5E19 /* TJLSessionManagerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB06E36E185403F3004E5E19 /* TJLSessionManagerTests.m */; };
 		DB06E37C18540427004E5E19 /* TJLSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DB06E37B18540427004E5E19 /* TJLSessionManager.m */; };
+		DBCC19F21856D0FD00D91C71 /* 301-alien-ship@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DBCC19F11856D0FD00D91C71 /* 301-alien-ship@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 		DB06E36E185403F3004E5E19 /* TJLSessionManagerTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TJLSessionManagerTests.m; sourceTree = "<group>"; };
 		DB06E37A18540427004E5E19 /* TJLSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TJLSessionManager.h; path = Source/TJLSessionManager.h; sourceTree = "<group>"; };
 		DB06E37B18540427004E5E19 /* TJLSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TJLSessionManager.m; path = Source/TJLSessionManager.m; sourceTree = "<group>"; };
+		DBCC19F11856D0FD00D91C71 /* 301-alien-ship@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "301-alien-ship@2x.png"; path = "Images.xcassets/301-alien-ship.imageset/301-alien-ship@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +117,7 @@
 		DB06E349185403F3004E5E19 /* TJLSessionManager */ = {
 			isa = PBXGroup;
 			children = (
+				DBCC19F11856D0FD00D91C71 /* 301-alien-ship@2x.png */,
 				DB06E378185403FF004E5E19 /* App Delegate & Storyboard */,
 				DB06E3791854040C004E5E19 /* RootVC */,
 				DB06E35B185403F3004E5E19 /* Images.xcassets */,
@@ -259,6 +262,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB06E35C185403F3004E5E19 /* Images.xcassets in Resources */,
+				DBCC19F21856D0FD00D91C71 /* 301-alien-ship@2x.png in Resources */,
 				DB06E34E185403F3004E5E19 /* InfoPlist.strings in Resources */,
 				DB06E357185403F3004E5E19 /* Main.storyboard in Resources */,
 			);
@@ -491,6 +495,7 @@
 				DB06E374185403F3004E5E19 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		DB06E375185403F3004E5E19 /* Build configuration list for PBXNativeTarget "TJLSessionManagerTests" */ = {
 			isa = XCConfigurationList;
@@ -499,6 +504,7 @@
 				DB06E377185403F3004E5E19 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
