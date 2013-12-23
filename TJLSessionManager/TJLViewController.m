@@ -162,7 +162,7 @@
         NSInputStream *input = (NSInputStream *)aStream;
         uint8_t buffer[1024];
         NSInteger length = [input read:buffer maxLength:1024];
-        [self.streamData appendBytes:(const void *)buffer length:(NSUInteger)lesngth];
+        [self.streamData appendBytes:(const void *)buffer length:(NSUInteger)length];
         NSLog(@"received");
     }
     else if(eventCode == NSStreamEventHasSpaceAvailable) {
