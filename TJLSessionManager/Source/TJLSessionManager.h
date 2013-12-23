@@ -7,8 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+
 @import MultipeerConnectivity;
+
 @interface TJLSessionManager : NSObject
+
 /**
  * Creates a session manager and sets the display name that will be show
  * to other users when browsing or advertising.
@@ -48,7 +51,7 @@
  * the peer The peer who wishes to connect and context data the peer sent along with the invitation. 
  * Context data may be nil.
  */
-- (void)didReceiveInvitationFromPeer:(void(^)(MCPeerID *peer, NSData *context))invite;
+- (void)didReceiveInvitationFromPeer:(void (^)(MCPeerID *peer, NSData *context))invite;
 
 /**
  * Sends data to all connected peers. Uses 'MCSessionSendDataReliable' mode.
@@ -105,11 +108,32 @@
  * @param block Block is called once the resource has begun to be received.
  * `progress` cna be used to observe the elapsed time if the resource transfer.
  */
-- (void)startReceivingResourceOnMainQueue:(BOOL)mainQueue block:(void(^)(NSString *name, MCPeerID *peer, NSProgress *progress))block;
+- (void)startReceivingResourceOnMainQueue:(BOOL)mainQueue block:(void (^)(NSString *name, MCPeerID *peer, NSProgress *progress))block;
+
+/**
+ * Starts an NSOutputStream for streaming to a single peer.
+ * You are responsible for opening the stream and scheduling it 
+ * in a runloop and handling all delegate calls.
+ *
+ * @param name The name of the stream.
+ * @param peerID the peer to stream to.
+ * @param error An error object that will be non-nil if an error occurs.
+ * @return An NSOutputStream that can be used to stream data the the given peer.
+ */
+- (NSOutputStream *)streamWithName:(NSString *)name toPeer:(MCPeerID *)peerID error:(NSError * __autoreleasing *)error;
+
+/**
+ * Called once when receiving a stream from a peer. You are responsible for 
+ * opening the stream and scheduling it in a runloop and handling all delegate calls.
+ *
+ * @param streamBlock A block that will be called once you receive a stream
+ * with the stream, the peer who sent it and the name of the stream.
+ */
+- (void)didReceiveStreamFromPeer:(void (^)(NSInputStream *inputStream, MCPeerID *peer, NSString *streamName))streamBlock;
 
 /**
  * Notifies you of the connection status of the particular peer
- * that is attemping to connect, or is connected.
+ * that is attempting to connect, or is connected.
  * @param mainQueue Whether or not `status` should be called on the main queue or not.
  * @param status A block with the peer that is attempting to connect
  * as well as the connection status.
@@ -125,7 +149,7 @@
  */
 - (void)browserWithControllerInViewController:(UIViewController *)controller connected:(void (^)(void))connected canceled:(void (^)(void))canceled;
 
-- (void)didFindPeerWithInfo:(void(^)(MCPeerID *peer, NSDictionary *info))found;
+- (void)didFindPeerWithInfo:(void (^)(MCPeerID *peer, NSDictionary *info))found;
 
 /**
  * Call this when a peer has asked to connect. Pass YES if you want to connect,
@@ -134,12 +158,13 @@
  * YES will accept the connection, NO will decline.
  */
 - (void)connectToPeer:(BOOL)connect;
+
 /**
  * Invites the peer to connect to your session. Calls the 'connected'
  * block when the connection is successful.
  * @param connected A block that is called when the connection is successful.
  */
-- (void)invitePeerToConnect:(MCPeerID *)peer connected:(void(^)(void))connected;
+- (void)invitePeerToConnect:(MCPeerID *)peer connected:(void (^)(void))connected;
 
 /**
  * A NSArray of all the currently connected peers
@@ -165,5 +190,5 @@
 /**
  * The first peer that connected to the session.
  */
-@property(strong, nonatomic, readonly)MCPeerID *firstPeer;
+@property(strong, nonatomic, readonly) MCPeerID *firstPeer;
 @end

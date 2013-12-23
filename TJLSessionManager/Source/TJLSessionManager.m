@@ -7,7 +7,9 @@
 //
 
 #import "TJLSessionManager.h"
+
 #define ServiceType @"TJLService"
+
 @interface TJLSessionManager () <MCAdvertiserAssistantDelegate, MCNearbyServiceBrowserDelegate, MCSessionDelegate, MCBrowserViewControllerDelegate, MCNearbyServiceAdvertiserDelegate, UIAlertViewDelegate>
 @property(strong, nonatomic) MCSession *currentSession;
 @property(strong, nonatomic) MCAdvertiserAssistant *advertisingAssistant;
@@ -19,11 +21,12 @@
 @property(nonatomic, copy) void(^connectionStatus)(MCPeerID *peer, MCSessionState state);
 @property(nonatomic, copy) void(^browserConnected)(void);
 @property(nonatomic, copy) void(^browserCancelled)(void);
-@property(nonatomic,copy) void(^didFindPeer)(MCPeerID *peer, NSDictionary *info);
-@property(nonatomic,copy) void(^invitationHandler)(BOOL connect, MCSession *session);
-@property(nonatomic,copy) void(^inviteBlock)(MCPeerID *peer, NSData *context);
-@property(nonatomic,copy) void(^didStartReceivingResource)(NSString *name, MCPeerID *peer, NSProgress *progress);
-@property(nonatomic,copy) void(^finalResource)(NSString *name, MCPeerID *peer, NSURL *url, NSError *error);
+@property(nonatomic, copy) void(^didFindPeer)(MCPeerID *peer, NSDictionary *info);
+@property(nonatomic, copy) void(^invitationHandler)(BOOL connect, MCSession *session);
+@property(nonatomic, copy) void(^inviteBlock)(MCPeerID *peer, NSData *context);
+@property(nonatomic, copy) void(^didStartReceivingResource)(NSString *name, MCPeerID *peer, NSProgress *progress);
+@property(nonatomic, copy) void(^finalResource)(NSString *name, MCPeerID *peer, NSURL *url, NSError *error);
+@property(nonatomic, copy) void(^streamBlock)(NSInputStream *inputStream, MCPeerID *peer, NSString *streamName);
 @property(nonatomic, assign) BOOL receiveOnMainQueue;
 @property(nonatomic, assign) BOOL statusOnMainQueue;
 @property(nonatomic, assign) BOOL resourceFinalOnMainQueue;
@@ -99,7 +102,7 @@
     else {
         if(self.finalResource) self.finalResource(resourceName, peerID, localURL, error);
     }
-    
+
 }
 
 - (void)session:(MCSession *)session didReceiveData:(NSData *)data fromPeer:(MCPeerID *)peerID {
@@ -114,7 +117,7 @@
 }
 
 - (void)session:(MCSession *)session didReceiveStream:(NSInputStream *)stream withName:(NSString *)streamName fromPeer:(MCPeerID *)peerID {
-    //TODO implement
+    if(self.streamBlock) self.streamBlock(stream, peerID, streamName);
 }
 
 - (void)session:(MCSession *)session didStartReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID withProgress:(NSProgress *)progress {
@@ -189,15 +192,15 @@
     return self.session.connectedPeers;
 }
 
-- (void)didReceiveInvitationFromPeer:(void(^)(MCPeerID *peer, NSData *context))invite; {
+- (void)didReceiveInvitationFromPeer:(void (^)(MCPeerID *peer, NSData *context))invite; {
     self.inviteBlock = [invite copy];
 }
 
-- (void)invitePeerToConnect:(MCPeerID *)peer connected:(void(^)(void))connected {
+- (void)invitePeerToConnect:(MCPeerID *)peer connected:(void (^)(void))connected {
     [self.browser invitePeer:peer toSession:self.session withContext:nil timeout:30];
 }
 
-- (void)startReceivingResourceOnMainQueue:(BOOL)mainQueue block:(void(^)(NSString *name, MCPeerID *peer, NSProgress *progress))block {
+- (void)startReceivingResourceOnMainQueue:(BOOL)mainQueue block:(void (^)(NSString *name, MCPeerID *peer, NSProgress *progress))block {
     self.didStartReceivingResource = [block copy];
     self.resourceStart = mainQueue;
 }
@@ -206,23 +209,32 @@
     self.finalResource = [block copy];
     self.resourceFinalOnMainQueue = mainQueue;
 }
-- (void)didFindPeerWithInfo:(void(^)(MCPeerID *peer, NSDictionary *info))found {
+
+- (NSOutputStream *)streamWithName:(NSString *)name toPeer:(MCPeerID *)peerID error:(NSError * __autoreleasing *)error {
+    return [self.session startStreamWithName:name toPeer:peerID error:error];
+}
+
+- (void)didReceiveStreamFromPeer:(void (^)(NSInputStream *inputStream, MCPeerID *peer, NSString *streamName))streamBlock {
+    self.streamBlock = [streamBlock copy];
+}
+
+- (void)didFindPeerWithInfo:(void (^)(MCPeerID *peer, NSDictionary *info))found {
     self.didFindPeer = [found copy];
 }
 
--(BOOL)isConnected {
+- (BOOL)isConnected {
     return self.session.connectedPeers && self.session.connectedPeers.count > 0;
 }
 
--(void)connectToPeer:(BOOL)connect {
+- (void)connectToPeer:(BOOL)connect {
     self.invitationHandler(connect, self.session);
 }
 
--(MCSession *)session {
+- (MCSession *)session {
     return self.currentSession;
 }
 
--(MCPeerID *)firstPeer {
+- (MCPeerID *)firstPeer {
     return self.session.connectedPeers.firstObject;
 }
 @end
