@@ -14,7 +14,9 @@
 
 /**
  * Creates a session manager and sets the display name that will be show
- * to other users when browsing or advertising.
+ * to other users when browsing or advertising. Defaults to using no encrytion.
+ * Use `-initWithDisplayName:securityIdentity:encrytionPreferences:` if you want to
+ * use encrytion.
  * @param displayName the name that will be show when browsing or advertising.
  * @return A instance of the class that is ready to use.
  */
@@ -22,12 +24,15 @@
 
 /**
  * Creates a session manager and sets the display name that will be show
- * to other users when browsing or advertising.
+ * to other users when browsing or advertising. Also can set security info and encrytion settings.
  * @param displayName the name that will be show when browsing or advertising.
- * @param info A dictionary of discovery info for use with service advertisers.
+ * @param security An array of security preferences used to identify yourself
+ * to other peers.
+ * @param preference If you want to require encrytion, leave it optional, or use none.
  * @return A instance of the class that is ready to use.
  */
-- (instancetype)initWithDisplayName:(NSString *)displayName discoveryInfo:(NSDictionary *)info;
+- (instancetype)initWithDisplayName:(NSString *)displayName securityIdentity:(NSArray *)security encryptionPreferences:(MCEncryptionPreference)preference;
+
 
 /**
  * Begins browsing for programmatic discovery. You must provide your own
@@ -36,14 +41,41 @@
 - (void)browseForProgrammaticDiscovery;
 
 /**
+ * Begins browsing for programmatic discovery. You must provide your own
+ * discovery UI when browsing this way.
+ * @param serviceType The type of service to advertise. This should be a
+ * short text string that describes the app's networking protocol. Should be something
+ * in the form of `tjl_appname`.
+ */
+- (void)browseForProgrammaticDiscoveryWithServiceType:(NSString *)type;
+
+/**
  * Advertises for discovery by the built in MCBrowserViewController.
  */
 - (void)advertiseForBrowserViewController;
 
 /**
+ * Advertises for discovery by the built in MCBrowserViewController.
+ * @param info A dictionary of discovery info for use with service advertisers.
+ * @param serviceType The type of service to advertise. This should be a
+ * short text string that describes the app's networking protocol. Should be something
+ * in the form of `tjl_appname`.
+ */
+- (void)advertiseForBrowserViewControllerWithServiceType:(NSString *)type discoveryInfo:(NSDictionary *)info;
+
+/**
  * Advertises for programmatic discovery.
  */
 - (void)advertiseForProgrammaticDiscovery;
+
+/**
+ * Advertises for programmatic discovery.
+ * @param info A dictionary of discovery info for use with service advertisers.
+ * @param serviceType The type of service to advertise. This should be a
+ * short text string that describes the app's networking protocol. Should be something
+ * in the form of `tjl_appname`.
+ */
+- (void)advertiseForProgrammaticDiscoveryWithServiceType:(NSString *)serviceType discoveryInfo:(NSDictionary *)info;
 
 /**
  * Called when you receive an invitation from a peer to connect.
@@ -62,6 +94,17 @@
 - (NSError *)sendDataToAllPeers:(NSData *)data;
 
 /**
+ * Sends data to all connected peers. Uses 'MCSessionSendDataReliable' mode.
+ * @param data the data that you wish to send to all of the connected peers.
+ * @param mode The mode that you want to use while sending the data.
+ * Only call this with MCSessionSendDataUnreliable, use `-sendDataToallPeers:`
+ * for reliable sending.
+ * @return An NSError object that is nil if no error occured on sending,
+ * non nil otherwise.
+ */
+- (NSError *)sendDataToAllPeers:(NSData *)data withMode:(MCSessionSendDataMode)mode;
+
+/**
  * Sends data to only the peers that you specify. Uses 'MCSessionSendDataReliable' mode.
  * @param data The data you wish to send.
  * @param peers The peers you wish to send the data to. Useful if you
@@ -70,6 +113,20 @@
  * non nil otherwise.
  */
 - (NSError *)sendData:(NSData *)data toPeers:(NSArray *)peers;
+
+/**
+ * Sends data to only the peers that you specify. Uses 'MCSessionSendDataReliable' mode.
+ * @param data The data you wish to send.
+ * @param peers The peers you wish to send the data to. Useful if you
+ * want to send data to only certain peers that are connected.
+ * @param mode The mode that you want to use while sending the data.
+ * Only call this with MCSessionSendDataUnreliable, use `-sendData: toPeers:`
+ * for reliable sending.
+ * @return An NSError object that is nil if no error occured on sending,
+ * non nil otherwise.
+ */
+- (NSError *)sendData:(NSData *)data toPeers:(NSArray *)peers withMode:(MCSessionSendDataMode)mode;
+
 
 /**
  * Receives all data that is sent to you for this session.
@@ -165,6 +222,23 @@
  * @param connected A block that is called when the connection is successful.
  */
 - (void)invitePeerToConnect:(MCPeerID *)peer connected:(void (^)(void))connected;
+
+/**
+ * Disconnects the local peer from the current session.
+ * If the local peer started the session, other peers will be
+ * disconnected as well.
+ */
+- (void)disconnectSession;
+
+/**
+ * Stops advertising the current session.
+ */
+- (void)stopAdvertising;
+
+/**
+ * Stops browsing for nearby peers.
+ */
+- (void)stopBrowsing;
 
 /**
  * A NSArray of all the currently connected peers

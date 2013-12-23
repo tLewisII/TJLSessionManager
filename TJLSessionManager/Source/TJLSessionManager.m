@@ -16,6 +16,7 @@
 @property(strong, nonatomic) MCNearbyServiceAdvertiser *advertiser;
 @property(strong, nonatomic) MCNearbyServiceBrowser *browser;
 @property(strong, nonatomic) MCPeerID *peerID;
+@property(strong, nonatomic) NSString *serviceType;
 @property(nonatomic, copy) void(^receiveDataBlock)(NSData *data, MCPeerID *peer);
 @property(nonatomic, copy) void(^receiveResourceBlock)(MCPeerID *peer, NSURL *url);
 @property(nonatomic, copy) void(^connectionStatus)(MCPeerID *peer, MCSessionState state);
@@ -35,29 +36,36 @@
 
 @implementation TJLSessionManager
 - (instancetype)initWithDisplayName:(NSString *)displayName {
-    return [self initWithDisplayName:displayName discoveryInfo:nil];
+    return [self initWithDisplayName:displayName securityIdentity:nil encryptionPreferences:MCEncryptionNone];
 }
 
-- (instancetype)initWithDisplayName:(NSString *)displayName discoveryInfo:(NSDictionary *)info {
+- (instancetype)initWithDisplayName:(NSString *)displayName securityIdentity:(NSArray *)security encryptionPreferences:(MCEncryptionPreference)preference {
     self = [super init];
     if(!self) {
         return nil;
     }
     self.peerID = [[MCPeerID alloc]initWithDisplayName:displayName];
-    self.currentSession = [[MCSession alloc]initWithPeer:self.peerID];
+    self.currentSession = [[MCSession alloc]initWithPeer:self.peerID securityIdentity:security encryptionPreference:preference];
     self.session.delegate = self;
-    self.discoveryInfo = info;
     return self;
 }
 
 - (void)advertiseForBrowserViewController {
-    self.advertiser = [[MCNearbyServiceAdvertiser alloc]initWithPeer:self.peerID discoveryInfo:self.discoveryInfo serviceType:ServiceType];
+    [self advertiseForBrowserViewControllerWithServiceType:ServiceType discoveryInfo:nil];
+}
+
+- (void)advertiseForBrowserViewControllerWithServiceType:(NSString *)type discoveryInfo:(NSDictionary *)info {
+    self.advertiser = [[MCNearbyServiceAdvertiser alloc]initWithPeer:self.peerID discoveryInfo:info serviceType:type];
     self.advertiser.delegate = self;
     [self.advertiser startAdvertisingPeer];
 }
 
 - (void)advertiseForProgrammaticDiscovery {
-    self.advertisingAssistant = [[MCAdvertiserAssistant alloc]initWithServiceType:ServiceType discoveryInfo:self.discoveryInfo session:self.session];
+    [self advertiseForProgrammaticDiscoveryWithServiceType:ServiceType discoveryInfo:nil];
+}
+
+- (void)advertiseForProgrammaticDiscoveryWithServiceType:(NSString *)type discoveryInfo:(NSDictionary *)info {
+    self.advertisingAssistant = [[MCAdvertiserAssistant alloc]initWithServiceType:type discoveryInfo:info session:self.session];
     self.advertisingAssistant.delegate = self;
     [self.advertisingAssistant start];
 }
@@ -68,15 +76,19 @@
 }
 
 - (void)advertiserAssistantDidDismissInvitation:(MCAdvertiserAssistant *)advertiserAssistant {
-    NSLog(@"advertiser did dismiss invitation");
+    //TODO implement
 }
 
 - (void)advertiserAssitantWillPresentInvitation:(MCAdvertiserAssistant *)advertiserAssistant {
-    NSLog(@"advertiser will present invitation");
+    //TODO implement
 }
 
 - (void)browseForProgrammaticDiscovery {
-    self.browser = [[MCNearbyServiceBrowser alloc]initWithPeer:self.peerID serviceType:ServiceType];
+    [self browseForProgrammaticDiscoveryWithServiceType:ServiceType];
+}
+
+- (void)browseForProgrammaticDiscoveryWithServiceType:(NSString *)type {
+    self.browser = [[MCNearbyServiceBrowser alloc]initWithPeer:self.peerID serviceType:type];
     self.browser.delegate = self;
     [self.browser startBrowsingForPeers];
 }
@@ -155,14 +167,22 @@
 }
 
 - (NSError *)sendDataToAllPeers:(NSData *)data {
+    return [self sendDataToAllPeers:data withMode:MCSessionSendDataReliable];
+}
+
+- (NSError *)sendDataToAllPeers:(NSData *)data withMode:(MCSessionSendDataMode)mode {
     NSError *error;
-    [self.session sendData:data toPeers:self.session.connectedPeers withMode:MCSessionSendDataReliable error:&error];
+    [self.session sendData:data toPeers:self.session.connectedPeers withMode:mode error:&error];
     return error;
 }
 
 - (NSError *)sendData:(NSData *)data toPeers:(NSArray *)peers {
+    return [self sendData:data toPeers:peers withMode:MCSessionSendDataReliable];
+}
+
+- (NSError *)sendData:(NSData *)data toPeers:(NSArray *)peers withMode:(MCSessionSendDataMode)mode {
     NSError *error;
-    [self.session sendData:data toPeers:peers withMode:MCSessionSendDataReliable error:&error];
+    [self.session sendData:data toPeers:peers withMode:mode error:&error];
     return error;
 }
 
@@ -220,6 +240,19 @@
 
 - (void)didFindPeerWithInfo:(void (^)(MCPeerID *peer, NSDictionary *info))found {
     self.didFindPeer = [found copy];
+}
+
+- (void)disconnectSession {
+    [self.session disconnect];
+}
+
+- (void)stopAdvertising {
+    [self.advertiser stopAdvertisingPeer];
+    [self.advertisingAssistant stop];
+}
+
+- (void)stopBrowsing {
+    [self.browser stopBrowsingForPeers];
 }
 
 - (BOOL)isConnected {
