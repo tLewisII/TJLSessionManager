@@ -3,7 +3,7 @@ A manager class for the new MultipeerConnectivity framework. Wraps up a bunch of
 
 <h2>Installation</h2>
 <hr>
-the prefered method is [Cocoapods](http://www.cocoapods.org), just put `pod 'TJLSessionManager', '1.0.1'` into your podfile. If you don't want to use cocoapods, just grab the files in the Source folder, drop them into your project and then `#import "TJLSessionManager.h"`. I am using the new Xcode modules, so you should not need to add any frameworks to your project.
+the prefered method is [Cocoapods](http://www.cocoapods.org), just put `pod 'TJLSessionManager', '1.0.2'` into your podfile. If you don't want to use cocoapods, just grab the files in the Source folder, drop them into your project and then `#import "TJLSessionManager.h"`. I am using the new Xcode modules, so you should not need to add any frameworks to your project.
 <h2>Usage</h2>
 <hr>
 There are several things that you need to do to connect two or more users with the Multipeer framework, and the basic steps of using TJLSessionManager are outlined below.<br>
@@ -11,7 +11,7 @@ There are several things that you need to do to connect two or more users with t
 One device will advertise,<br>
 `-advertiseForBrowserViewController`<br>
 One device will browse, this uses the Apple provided browser view controller.<br>
-`-browserWithControllerInViewController:connected:canceled:`<br>
+`-browseWithControllerInViewController:connected:canceled:`<br>
 This will be called when someone wants to connect.<br>
 `-didReceiveInvitationFromPeer:`<br>
 This will give you the status of the connection.<br>
