@@ -20,18 +20,22 @@
  * @param displayName the name that will be show when browsing or advertising.
  * @return A instance of the class that is ready to use.
  */
-- (instancetype)initWithDisplayName:(NSString *)displayName;
+- (instancetype)__attribute__((nonnull(1)))initWithDisplayName:(NSString *)displayName;
 
 /**
  * Creates a session manager and sets the display name that will be show
- * to other users when browsing or advertising. Also can set security info and encrytion settings.
+ * to other users when browsing or advertising. Also can set security info and encrytion settings,
+ * as well as the service type.
  * @param displayName the name that will be show when browsing or advertising.
  * @param security An array of security preferences used to identify yourself
  * to other peers.
  * @param preference If you want to require encrytion, leave it optional, or use none.
+ * @param type The type of service to advertise. This should be a
+ * short text string that describes the app's networking protocol. Should be something
+ * in the form of `tjl_appname`.
  * @return A instance of the class that is ready to use.
  */
-- (instancetype)initWithDisplayName:(NSString *)displayName securityIdentity:(NSArray *)security encryptionPreferences:(MCEncryptionPreference)preference;
+- (instancetype)__attribute__((nonnull(1, 4)))initWithDisplayName:(NSString *)displayName securityIdentity:(NSArray *)security encryptionPreferences:(MCEncryptionPreference)preference serviceType:(NSString *)type;
 
 
 /**
@@ -41,15 +45,6 @@
 - (void)browseForProgrammaticDiscovery;
 
 /**
- * Begins browsing for programmatic discovery. You must provide your own
- * discovery UI when browsing this way.
- * @param serviceType The type of service to advertise. This should be a
- * short text string that describes the app's networking protocol. Should be something
- * in the form of `tjl_appname`.
- */
-- (void)browseForProgrammaticDiscoveryWithServiceType:(NSString *)type;
-
-/**
  * Advertises for discovery by the built in MCBrowserViewController.
  */
 - (void)advertiseForBrowserViewController;
@@ -57,11 +52,8 @@
 /**
  * Advertises for discovery by the built in MCBrowserViewController.
  * @param info A dictionary of discovery info for use with service advertisers.
- * @param serviceType The type of service to advertise. This should be a
- * short text string that describes the app's networking protocol. Should be something
- * in the form of `tjl_appname`.
  */
-- (void)advertiseForBrowserViewControllerWithServiceType:(NSString *)type discoveryInfo:(NSDictionary *)info;
+- (void)advertiseForBrowserViewControllerWithDiscoveryInfo:(NSDictionary *)info;
 
 /**
  * Advertises for programmatic discovery.
@@ -75,7 +67,7 @@
  * short text string that describes the app's networking protocol. Should be something
  * in the form of `tjl_appname`.
  */
-- (void)advertiseForProgrammaticDiscoveryWithServiceType:(NSString *)serviceType discoveryInfo:(NSDictionary *)info;
+- (void)advertiseForProgrammaticDiscoveryWithDiscoveryInfo:(NSDictionary *)info;
 
 /**
  * Called when you receive an invitation from a peer to connect.
@@ -204,8 +196,11 @@
  * @param connected A block that will be called upon successful connection.
  * @param canceled A block that will be called if the browser is canceled.
  */
-- (void)browserWithControllerInViewController:(UIViewController *)controller connected:(void (^)(void))connected canceled:(void (^)(void))canceled;
+- (void)browseWithControllerInViewController:(UIViewController *)controller connected:(void (^)(void))connected canceled:(void (^)(void))cancelled;
 
+/**
+ * Called when the browser finds a peer
+ */
 - (void)didFindPeerWithInfo:(void (^)(MCPeerID *peer, NSDictionary *info))found;
 
 /**
@@ -265,4 +260,13 @@
  * The first peer that connected to the session.
  */
 @property(strong, nonatomic, readonly) MCPeerID *firstPeer;
+
+/**
+ * The service type provided for browsing and advertising.
+ * This should be a short text string that describes the 
+ * app's networking protocol. Should be something
+ * in the form of `tjl_appname`.
+ */
+@property(strong, nonatomic) NSString *serviceType;
+
 @end

@@ -16,7 +16,6 @@
 @property(strong, nonatomic) MCNearbyServiceAdvertiser *advertiser;
 @property(strong, nonatomic) MCNearbyServiceBrowser *browser;
 @property(strong, nonatomic) MCPeerID *peerID;
-@property(strong, nonatomic) NSString *serviceType;
 @property(nonatomic, copy) void(^receiveDataBlock)(NSData *data, MCPeerID *peer);
 @property(nonatomic, copy) void(^receiveResourceBlock)(MCPeerID *peer, NSURL *url);
 @property(nonatomic, copy) void(^connectionStatus)(MCPeerID *peer, MCSessionState state);
@@ -36,10 +35,10 @@
 
 @implementation TJLSessionManager
 - (instancetype)initWithDisplayName:(NSString *)displayName {
-    return [self initWithDisplayName:displayName securityIdentity:nil encryptionPreferences:MCEncryptionNone];
+    return [self initWithDisplayName:displayName securityIdentity:nil encryptionPreferences:MCEncryptionNone serviceType:ServiceType];
 }
 
-- (instancetype)initWithDisplayName:(NSString *)displayName securityIdentity:(NSArray *)security encryptionPreferences:(MCEncryptionPreference)preference {
+- (instancetype)initWithDisplayName:(NSString *)displayName securityIdentity:(NSArray *)security encryptionPreferences:(MCEncryptionPreference)preference serviceType:(NSString *)type {
     self = [super init];
     if(!self) {
         return nil;
@@ -47,25 +46,26 @@
     self.peerID = [[MCPeerID alloc]initWithDisplayName:displayName];
     self.currentSession = [[MCSession alloc]initWithPeer:self.peerID securityIdentity:security encryptionPreference:preference];
     self.session.delegate = self;
+    self.serviceType = type;
     return self;
 }
 
 - (void)advertiseForBrowserViewController {
-    [self advertiseForBrowserViewControllerWithServiceType:ServiceType discoveryInfo:nil];
+    [self advertiseForBrowserViewControllerWithDiscoveryInfo:nil];
 }
 
-- (void)advertiseForBrowserViewControllerWithServiceType:(NSString *)type discoveryInfo:(NSDictionary *)info {
-    self.advertiser = [[MCNearbyServiceAdvertiser alloc]initWithPeer:self.peerID discoveryInfo:info serviceType:type];
+- (void)advertiseForBrowserViewControllerWithDiscoveryInfo:(NSDictionary *)info {
+    self.advertiser = [[MCNearbyServiceAdvertiser alloc]initWithPeer:self.peerID discoveryInfo:info serviceType:self.serviceType];
     self.advertiser.delegate = self;
     [self.advertiser startAdvertisingPeer];
 }
 
 - (void)advertiseForProgrammaticDiscovery {
-    [self advertiseForProgrammaticDiscoveryWithServiceType:ServiceType discoveryInfo:nil];
+    [self advertiseForProgrammaticDiscoveryWithDiscoveryInfo:nil];
 }
 
-- (void)advertiseForProgrammaticDiscoveryWithServiceType:(NSString *)type discoveryInfo:(NSDictionary *)info {
-    self.advertisingAssistant = [[MCAdvertiserAssistant alloc]initWithServiceType:type discoveryInfo:info session:self.session];
+- (void)advertiseForProgrammaticDiscoveryWithDiscoveryInfo:(NSDictionary *)info {
+    self.advertisingAssistant = [[MCAdvertiserAssistant alloc]initWithServiceType:self.serviceType discoveryInfo:info session:self.session];
     self.advertisingAssistant.delegate = self;
     [self.advertisingAssistant start];
 }
@@ -84,11 +84,7 @@
 }
 
 - (void)browseForProgrammaticDiscovery {
-    [self browseForProgrammaticDiscoveryWithServiceType:ServiceType];
-}
-
-- (void)browseForProgrammaticDiscoveryWithServiceType:(NSString *)type {
-    self.browser = [[MCNearbyServiceBrowser alloc]initWithPeer:self.peerID serviceType:type];
+    self.browser = [[MCNearbyServiceBrowser alloc]initWithPeer:self.peerID serviceType:self.serviceType];
     self.browser.delegate = self;
     [self.browser startBrowsingForPeers];
 }
@@ -200,10 +196,10 @@
     self.statusOnMainQueue = mainQueue;
 }
 
-- (void)browserWithControllerInViewController:(UIViewController *)controller connected:(void (^)(void))connected canceled:(void (^)(void))canceled {
+- (void)browseWithControllerInViewController:(UIViewController *)controller connected:(void (^)(void))connected canceled:(void (^)(void))cancelled {
     self.browserConnected = [connected copy];
-    self.browserCancelled = [canceled copy];
-    MCBrowserViewController *browser = [[MCBrowserViewController alloc]initWithServiceType:ServiceType session:self.session];
+    self.browserCancelled = [cancelled copy];
+    MCBrowserViewController *browser = [[MCBrowserViewController alloc]initWithServiceType:self.serviceType session:self.session];
     browser.delegate = self;
     [controller presentViewController:browser animated:YES completion:nil];
 }

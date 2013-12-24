@@ -73,7 +73,7 @@
 }
 
 - (IBAction)browse:(UIBarButtonItem *)sender {
-    [self.sessionManager browserWithControllerInViewController:self connected:^{
+    [self.sessionManager browseWithControllerInViewController:self connected:^{
         NSLog(@"connected");
     }                                                 canceled:^{
         NSLog(@"cancelled");
